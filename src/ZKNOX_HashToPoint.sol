@@ -39,7 +39,6 @@
 pragma solidity ^0.8.25;
 
 import "./ZKNOX_falcon_utils.sol";
-import "./ZKNOX_shake.sol";
 //import {Test, console} from "forge-std/Test.sol";
 //import "./ZKNOX_display.sol";
 
@@ -84,32 +83,6 @@ function splitToHex(bytes32 x) pure returns (uint16[16] memory) {
         res[i] = uint16(uint256(x) >> ((15 - i) * 16));
     }
     return res;
-}
-
-function hashToPointNIST(bytes memory salt, bytes memory msgHash) pure returns (uint256[] memory) {
-    // SALT AND MSG ARE SWAPPED!
-    uint256[] memory hashed = new uint256[](512);
-    uint256 i = 0;
-    uint256 j = 0;
-    ctx_shake memory ctx;
-    bytes memory tmp;
-    ctx = shake_update(ctx, abi.encodePacked(salt, msgHash));
-    ctx = shake_pad(ctx);
-    (ctx, tmp) = shake_squeeze(ctx, _RATE);
-    while (i < n) {
-        if (j == _RATE) {
-            (ctx, tmp) = shake_squeeze(ctx, _RATE);
-            j = 0;
-        }
-        uint256 dibytes = uint256(uint8(tmp[j + 1])) + (uint256(uint8(tmp[j])) << 8);
-        if (dibytes < kq) {
-            hashed[i] = dibytes % q;
-            i++;
-        }
-        j += 2;
-    }
-    //hashed=Swap(hashed);
-    return hashed;
 }
 
 //Use for Poc only, as this XOF doesn't respect separation domain for input and output of internal state
